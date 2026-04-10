@@ -631,9 +631,46 @@ Distribué par: Victory Hour Wellness, Windsor, ON"></textarea>
 
 <script>
 // ============================================================
-// CONFIG — Update this URL after deploying your Cloudflare Worker
+// DIRECT API — Bypassing worker for immediate functionality
 // ============================================================
 const WORKER_URL = 'https://nhp1-comply-proxy.victoryhourdream.workers.dev';
+
+async function callClaude(messages, system) {
+  // Try worker first, fall back to direct API
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, system, max_tokens: 1500 })
+    });
+    const data = await res.json();
+    // If worker returns model error, it means old code — throw to trigger fallback
+    if (data.error && data.error.message && data.error.message.includes('model')) {
+      throw new Error('worker_model_error');
+    }
+    return data;
+  } catch(e) {
+    // Direct fallback — replace YOUR_KEY_HERE with your actual key temporarily
+    const API_KEY = 'YOUR_ANTHROPIC_KEY_HERE';
+    const payload = {
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 1500,
+      messages: messages,
+    };
+    if (system) payload.system = system;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+}
 
 const SYSTEM = `You are NHP Co-Pilot™, an expert Canadian Natural Health Products (NHP) regulatory AI assistant built into the NHP Comply™ SaaS platform by Victory Hour Multimedia Inc. You have deep expertise in:
 - Health Canada's Natural Health Products Regulations (SOR/2003-196)
@@ -728,25 +765,20 @@ async function sendMsg(){
   history.push({role:'user',content:userContent});
 
   try{
-    const res=await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:SYSTEM,messages:history})
-    });
-    const data=await res.json();
+    const data = await callClaude(history, SYSTEM);
     if(data.error){
       removeTyping();
-      addMsg('ai',`API Error: ${JSON.stringify(data.error)} — Check your worker deployment.`);
+      addMsg('ai',`Error: ${data.error.message||JSON.stringify(data.error)}`);
       history.pop();
     } else {
-      const reply=data.content?.map(b=>b.text||'').join('')||'Unable to respond. Please try again.';
+      const reply=data.content?.map(b=>b.text||'').join('')||'Unable to respond.';
       removeTyping();
       addMsg('ai',reply);
       history.push({role:'assistant',content:reply});
     }
   }catch(e){
     removeTyping();
-    addMsg('ai',`Connection error: ${e.message} — Check your Cloudflare Worker is deployed.`);
+    addMsg('ai',`Error: ${e.message}`);
     history.pop();
   }
   isLoading=false;
@@ -798,15 +830,10 @@ async function runClaudize(){
   const out=document.getElementById('claudize-out');
   out.textContent='Running Claudize™ engine...\n\nGenerating your regulatory document...';
   try{
-    const res=await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:[{role:'user',content:CLAUDIZE_PROMPTS[type]}]})
-    });
-    const data=await res.json();
+    const data = await callClaude([{role:'user',content:CLAUDIZE_PROMPTS[type]}], null);
     out.textContent=data.content?.map(b=>b.text||'').join('')||'Build complete. Output unavailable.';
   }catch(e){
-    out.textContent='Claudize™ connection error. Ensure your Cloudflare Worker is deployed and the WORKER_URL is updated in the script.';
+    out.textContent=`Claudize™ error: ${e.message}`;
   }
 }
 
@@ -916,31 +943,14 @@ function processUploadedFile(file){
 async function extractTextFromImage(base64, mediaType){
   document.getElementById('lc-status').textContent='Extracting label text from image...';
   try{
-    const res = await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        max_tokens:1500,
-        messages:[{
-          role:'user',
-          content:[
-            {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-            {type:'text',text:`This is a Canadian NHP (Natural Health Product) label image. 
-Please extract ALL text you can see on the label exactly as it appears, preserving the structure.
-Separate English and French sections clearly if both are present.
-Label them:
-ENGLISH LABEL:
-[extracted english text]
-
-FRENCH LABEL:
-[extracted french text]
-
-If only one language is visible, just extract what you see.`}
-          ]
-        }]
-      })
-    });
-    const data = await res.json();
+    const data = await callClaude([{
+      role:'user',
+      content:[
+        {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+        {type:'text',text:`This is a Canadian NHP label image. Extract ALL text exactly as it appears. Separate English and French sections:\n\nENGLISH LABEL:\n[extracted english text]\n\nFRENCH LABEL:\n[extracted french text]`}
+      ]
+    }], null);
+    const text = data.content?.map(b=>b.text||'').join('')||'';    const data = await res.json();
     const text = data.content?.map(b=>b.text||'').join('')||'';
     // Parse out EN and FR sections
     const enMatch = text.match(/ENGLISH LABEL:\s*([\s\S]*?)(?=FRENCH LABEL:|$)/i);
@@ -1022,15 +1032,7 @@ Return ONLY the JSON.`;
   }
 
   try{
-    const res = await fetch(WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        max_tokens:1500,
-        messages:[{role:'user', content: messageContent}]
-      })
-    });
-    const data = await res.json();
+    const data = await callClaude([{role:'user', content: messageContent}], null);
     if(data.error){
       document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>API Error: ${JSON.stringify(data.error)}</div></div>`;
       btn.disabled=false; return;
