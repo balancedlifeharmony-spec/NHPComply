@@ -902,11 +902,12 @@ function processUploadedFile(file){
     uploadedImageData = base64;
     uploadedMediaType = file.type;
     status.innerHTML=`<span class="uploaded-badge">✓ ${file.name}</span>`;
-    // If it's an image, also extract text via Claude and populate the textarea
+    // Images: extract text into textareas. PDFs: send directly to audit
     if(file.type !== 'application/pdf'){
       extractTextFromImage(base64, file.type);
     } else {
-      document.getElementById('lc-status').textContent='PDF loaded — click Analyze Labels to audit.';
+      document.getElementById('lc-status').textContent='PDF loaded ✓ — click Analyze Labels to audit directly.';
+    }
     }
   };
   reader.readAsDataURL(file);
@@ -990,13 +991,20 @@ Check ALL of the following (SOR/2003-196):
 
 Return ONLY the JSON.`;
 
-  // Build message content — include image if uploaded
+  // Build message content — handle image vs PDF vs text
   let messageContent;
   if(uploadedImageData && !en && !fr){
-    messageContent = [
-      {type:'image', source:{type:'base64', media_type:uploadedMediaType, data:uploadedImageData}},
-      {type:'text', text: auditInstruction}
-    ];
+    if(uploadedMediaType === 'application/pdf'){
+      messageContent = [
+        {type:'document', source:{type:'base64', media_type:'application/pdf', data:uploadedImageData}},
+        {type:'text', text: auditInstruction}
+      ];
+    } else {
+      messageContent = [
+        {type:'image', source:{type:'base64', media_type:uploadedMediaType, data:uploadedImageData}},
+        {type:'text', text: auditInstruction}
+      ];
+    }
   } else {
     messageContent = auditInstruction;
   }
