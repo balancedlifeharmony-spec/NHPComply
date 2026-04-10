@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -218,6 +219,65 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--navy);color:var(
 #footer{padding:8px 24px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3);flex-shrink:0;}
 .footer-brand{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:var(--gold-dim);}
 .hunger-badge{display:flex;align-items:center;gap:5px;color:var(--green);font-size:11px;font-weight:600;}
+
+/* LABEL CHECKER */
+#label-checker-view{display:none;flex-direction:column;gap:20px;}
+#label-checker-view.active{display:flex;}
+#dashboard-view{display:flex;flex-direction:column;gap:20px;}
+#dashboard-view.hidden{display:none;}
+
+.lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.lc-panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.lc-panel-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.lc-panel-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--gold);}
+.lc-panel-sub{font-size:11px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;}
+.lang-toggle{display:flex;gap:4px;}
+.lang-btn{padding:4px 10px;border-radius:3px;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text3);text-transform:uppercase;transition:all 0.15s;}
+.lang-btn.active{background:rgba(201,168,76,0.15);color:var(--gold);border-color:var(--border2);}
+.lc-textarea{width:100%;background:var(--navy);border:none;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:16px;resize:none;outline:none;min-height:280px;line-height:1.7;}
+.lc-textarea::placeholder{color:var(--text3);}
+.lc-actions{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
+.btn-analyze{display:flex;align-items:center;gap:7px;padding:9px 20px;background:linear-gradient(135deg,#0B1D3A,#162848);border:1.5px solid var(--gold);border-radius:5px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;}
+.btn-analyze:hover{box-shadow:0 0 16px rgba(201,168,76,0.3);}
+.btn-analyze:disabled{opacity:0.4;cursor:default;box-shadow:none;}
+.btn-clear{padding:9px 14px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:600;letter-spacing:0.5px;cursor:pointer;text-transform:uppercase;transition:all 0.15s;font-family:'Barlow Condensed',sans-serif;}
+.btn-clear:hover{color:var(--text);background:rgba(255,255,255,0.04);}
+
+.lc-results{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.lc-results-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.lc-score-badge{display:flex;align-items:center;gap:8px;}
+.lc-score-num{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;}
+.lc-score-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+.lc-results-body{padding:16px;min-height:200px;}
+.lc-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;color:var(--text3);font-size:13px;gap:8px;text-align:center;line-height:1.6;}
+.lc-placeholder-icon{font-size:32px;opacity:0.4;}
+
+.check-list{display:flex;flex-direction:column;gap:8px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);}
+.check-item.pass{border-color:rgba(46,204,138,0.15);background:rgba(46,204,138,0.04);}
+.check-item.fail{border-color:rgba(224,80,80,0.15);background:rgba(224,80,80,0.04);}
+.check-item.warn{border-color:rgba(240,160,32,0.15);background:rgba(240,160,32,0.04);}
+.check-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.check-body{flex:1;}
+.check-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.check-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.check-ref{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;}
+
+.bilingual-note{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(201,168,76,0.06);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text2);margin-bottom:12px;}
+.bilingual-icon{font-size:16px;}
+
+.lc-copy-btn{padding:6px 14px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:rgba(201,168,76,0.05);color:var(--gold);text-transform:uppercase;transition:all 0.15s;font-family:'Barlow Condensed',sans-serif;}
+.lc-copy-btn:hover{background:rgba(201,168,76,0.14);}
+
+.lc-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:14px;}
+.lc-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.lc-loading-text{font-size:12px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;}
+
+.summary-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.summary-stat{background:var(--surface2);border-radius:6px;padding:10px 12px;text-align:center;}
+.summary-stat-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;margin-bottom:2px;}
+.summary-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
 </style>
 </head>
 <body>
@@ -255,7 +315,7 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--navy);color:var(
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Tools</div>
-      <button class="sidebar-item" onclick="activeSide(this)"><span class="s-dot dim"></span>Label Checker</button>
+      <button class="sidebar-item" onclick="showLabelChecker(this)"><span class="s-dot dim"></span>Label Checker</button>
       <button class="sidebar-item" onclick="activeSide(this)"><span class="s-dot dim"></span>Ingredient DB</button>
       <button class="sidebar-item" onclick="activeSide(this)"><span class="s-dot dim"></span>GMP Checklist</button>
       <button class="sidebar-item" onclick="activeSide(this)"><span class="s-dot dim"></span>Import Tracker</button>
@@ -263,6 +323,9 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--navy);color:var(
   </aside>
 
   <main id="content">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view">
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-label">Active Products</div>
@@ -376,6 +439,104 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--navy);color:var(
         </div>
       </div>
     </div>
+    </div><!-- end dashboard-view -->
+
+    <!-- LABEL CHECKER VIEW -->
+    <div id="label-checker-view">
+      <div class="section-hd">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="section-title">Label Checker</div>
+          <span class="pill pill-green" style="font-size:10px;">Live AI</span>
+        </div>
+        <button class="btn-clear" onclick="showDashboard()">← Back to Dashboard</button>
+      </div>
+
+      <div class="bilingual-note">
+        <span class="bilingual-icon">🇨🇦</span>
+        <span>Health Canada requires NHP labels in <strong>both official languages</strong> — English and French (SOR/2003-196, Section 10). Enter both label versions below for a full bilingual compliance audit.</span>
+      </div>
+
+      <div class="lc-grid">
+        <!-- ENGLISH PANEL -->
+        <div class="lc-panel">
+          <div class="lc-panel-hd">
+            <div>
+              <div class="lc-panel-title">English Label</div>
+              <div class="lc-panel-sub">Principal Display Panel + All Panels</div>
+            </div>
+            <span class="pill pill-green" style="font-size:10px;">EN</span>
+          </div>
+          <textarea class="lc-textarea" id="label-en" placeholder="Paste your English label text here...
+
+Example:
+Product Name: OmegaShield 3-6-9
+NPN: 80012345
+Net Quantity: 90 softgels
+Recommended Use: Helps support cardiovascular health
+Medicinal Ingredients: Fish Oil (EPA 300mg, DHA 200mg)
+Non-Medicinal: Gelatin, Glycerin
+Directions: Take 1 softgel daily with food
+Cautions: Consult a health care practitioner if pregnant
+Store below 25°C
+Lot: A2024-01  Exp: 2026-08
+Distributed by: Victory Hour Wellness, Windsor, ON"></textarea>
+          <div class="lc-actions">
+            <button class="btn-analyze" id="analyze-btn" onclick="runLabelCheck()">✦ Analyze Labels</button>
+            <button class="btn-clear" onclick="clearLabels()">Clear</button>
+            <span id="lc-status" style="font-size:11px;color:var(--text3);margin-left:auto;"></span>
+          </div>
+        </div>
+
+        <!-- FRENCH PANEL -->
+        <div class="lc-panel">
+          <div class="lc-panel-hd">
+            <div>
+              <div class="lc-panel-title">French Label</div>
+              <div class="lc-panel-sub">Étiquette principale + tous les panneaux</div>
+            </div>
+            <span class="pill pill-blue" style="font-size:10px;">FR</span>
+          </div>
+          <textarea class="lc-textarea" id="label-fr" placeholder="Collez votre texte d'étiquette français ici...
+
+Exemple:
+Nom du produit: OmegaShield 3-6-9
+NPN: 80012345
+Quantité nette: 90 capsules molles
+Usage recommandé: Aide à soutenir la santé cardiovasculaire
+Ingrédients médicinaux: Huile de poisson (EPA 300mg, DHA 200mg)
+Ingrédients non médicinaux: Gélatine, Glycérine
+Mode d'emploi: Prendre 1 capsule par jour avec de la nourriture
+Mises en garde: Consulter un professionnel de la santé si enceinte
+Conserver en dessous de 25°C
+Lot: A2024-01  Exp: 2026-08
+Distribué par: Victory Hour Wellness, Windsor, ON"></textarea>
+          <div class="lc-actions" style="justify-content:flex-end;">
+            <button class="btn-clear" onclick="loadSampleFR()">Load Sample FR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="lc-results">
+        <div class="lc-results-hd">
+          <div class="lc-panel-title">Compliance Audit Results</div>
+          <div class="lc-score-badge" id="lc-score-area" style="display:none;">
+            <div>
+              <div class="lc-score-label">Label Score</div>
+              <div class="lc-score-num" id="lc-score-num">—</div>
+            </div>
+            <button class="lc-copy-btn" onclick="copyLabelResults()">Copy Report</button>
+          </div>
+        </div>
+        <div class="lc-results-body" id="lc-results-body">
+          <div class="lc-placeholder">
+            <div class="lc-placeholder-icon">🏷️</div>
+            <div>Paste your English and French label text above<br>then click <strong>Analyze Labels</strong> to run a full NHP compliance audit</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end label-checker-view -->
+
   </main>
 
   <!-- AI CO-PILOT PANEL -->
@@ -450,7 +611,7 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--navy);color:var(
 // ============================================================
 // CONFIG — Update this URL after deploying your Cloudflare Worker
 // ============================================================
-const WORKER_URL = 'https://nhp1-comply-proxy.victoryhourdream.workers.dev';
+const WORKER_URL = 'https://nhp-comply-proxy.victoryhourdream.workers.dev';
 
 const SYSTEM = `You are NHP Co-Pilot™, an expert Canadian Natural Health Products (NHP) regulatory AI assistant built into the NHP Comply™ SaaS platform by Victory Hour Multimedia Inc. You have deep expertise in:
 - Health Canada's Natural Health Products Regulations (SOR/2003-196)
@@ -627,6 +788,173 @@ function copyOutput(){
   navigator.clipboard.writeText(document.getElementById('claudize-out').textContent).then(()=>{
     const b=document.getElementById('copy-btn');
     b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',2000);
+  });
+}
+
+// ============================================================
+// LABEL CHECKER
+// ============================================================
+function showLabelChecker(el){
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('dashboard-view').classList.add('hidden');
+  document.getElementById('label-checker-view').classList.add('active');
+}
+
+function showDashboard(){
+  document.getElementById('dashboard-view').classList.remove('hidden');
+  document.getElementById('label-checker-view').classList.remove('active');
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.sidebar-item').classList.add('active');
+}
+
+function clearLabels(){
+  document.getElementById('label-en').value='';
+  document.getElementById('label-fr').value='';
+  document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">🏷️</div><div>Paste your English and French label text above<br>then click <strong>Analyze Labels</strong> to run a full NHP compliance audit</div></div>`;
+  document.getElementById('lc-score-area').style.display='none';
+  document.getElementById('lc-status').textContent='';
+}
+
+function loadSampleFR(){
+  document.getElementById('label-fr').value=`Nom du produit: OmegaShield 3-6-9
+NPN: 80012345
+Quantité nette: 90 capsules molles
+Usage recommandé: Aide à soutenir la santé cardiovasculaire
+Ingrédients médicinaux: Huile de poisson (EPA 300mg, DHA 200mg)
+Ingrédients non médicinaux: Gélatine, Glycérine, Tocophérols mixtes
+Mode d'emploi: Prendre 1 capsule molle par jour avec de la nourriture
+Mises en garde: Consulter un professionnel de la santé si enceinte ou si vous allaitez
+Conserver en dessous de 25°C, à l'abri de la lumière
+Lot: A2024-01  Date d'expiration: 2026-08
+Distribué par: Victory Hour Wellness, Windsor, ON Canada`;
+}
+
+let labelResultsText = '';
+
+async function runLabelCheck(){
+  const en = document.getElementById('label-en').value.trim();
+  const fr = document.getElementById('label-fr').value.trim();
+  if(!en && !fr){
+    document.getElementById('lc-status').textContent='Please enter at least one label.';
+    return;
+  }
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  document.getElementById('lc-status').textContent='';
+  document.getElementById('lc-score-area').style.display='none';
+  document.getElementById('lc-results-body').innerHTML=`<div class="lc-loading"><div class="lc-spinner"></div><div class="lc-loading-text">Claude is auditing your label against SOR/2003-196...</div></div>`;
+
+  const prompt = `You are an expert Canadian NHP label compliance auditor under the Natural Health Products Regulations (SOR/2003-196).
+
+Audit the following NHP label(s) and return a JSON object ONLY — no preamble, no markdown, no explanation outside the JSON.
+
+ENGLISH LABEL:
+${en || '(not provided)'}
+
+FRENCH LABEL:
+${fr || '(not provided)'}
+
+Return this exact JSON structure:
+{
+  "score": <number 0-100>,
+  "scoreColor": <"green" if 80+, "amber" if 50-79, "red" if below 50>,
+  "summary": "<2 sentence overall assessment>",
+  "bilingualStatus": "<assessment of bilingual compliance — are both languages present, equivalent, and complete?>",
+  "checks": [
+    {
+      "status": "<pass|fail|warn>",
+      "title": "<short title of the check>",
+      "description": "<what was found or missing>",
+      "regulation": "<e.g. SOR/2003-196 Section 6(1)(a)>"
+    }
+  ]
+}
+
+Check ALL of the following requirements from SOR/2003-196:
+1. Product proper name present (EN + FR) — Section 6(1)(a)
+2. NPN or DIN-HM number present — Section 6(1)(b)
+3. Net quantity stated — Section 6(1)(c)
+4. Name and address of product licence holder — Section 6(1)(d)
+5. Lot number present — Section 6(1)(e)
+6. Expiry date present — Section 6(1)(f)
+7. Recommended use/purpose stated — Section 6(2)(a)
+8. Medicinal ingredients listed with quantity/potency — Section 6(2)(b)
+9. Non-medicinal ingredients listed — Section 6(2)(c)
+10. Directions for use present — Section 6(2)(d)
+11. Risk information / cautions / contraindications — Section 6(2)(e)
+12. Storage conditions stated — Section 6(2)(f)
+13. Both official languages used (English AND French) — Section 10
+14. French label equivalent to English (same information, no omissions) — Section 10
+15. No disease treatment claims beyond Schedule A scope — Section 9
+16. Recommended dose is specific with units — HC guidance
+
+Return ONLY the JSON. No other text.`;
+
+  try{
+    const res = await fetch(WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const raw = data.content?.map(b=>b.text||'').join('')||'';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
+    renderLabelResults(result);
+  }catch(e){
+    document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>Analysis error. Check your worker connection and try again.<br><small style="color:var(--text3)">${e.message}</small></div></div>`;
+  }
+  btn.disabled=false;
+}
+
+function renderLabelResults(r){
+  const scoreColors = {green:'var(--green)',amber:'var(--amber)',red:'var(--red)'};
+  const color = scoreColors[r.scoreColor]||'var(--text)';
+
+  const passCount = r.checks.filter(c=>c.status==='pass').length;
+  const failCount = r.checks.filter(c=>c.status==='fail').length;
+  const warnCount = r.checks.filter(c=>c.status==='warn').length;
+
+  const scoreEl = document.getElementById('lc-score-num');
+  scoreEl.textContent = r.score+'/100';
+  scoreEl.style.color = color;
+  document.getElementById('lc-score-area').style.display='flex';
+
+  const icons = {pass:'✅',fail:'❌',warn:'⚠️'};
+
+  const checksHTML = r.checks.map(c=>`
+    <div class="check-item ${c.status}">
+      <div class="check-icon">${icons[c.status]||'•'}</div>
+      <div class="check-body">
+        <div class="check-title">${c.title}</div>
+        <div class="check-desc">${c.description}</div>
+        <div class="check-ref">${c.regulation}</div>
+      </div>
+    </div>`).join('');
+
+  const body = `
+    <div class="summary-bar">
+      <div class="summary-stat"><div class="summary-stat-num" style="color:var(--green)">${passCount}</div><div class="summary-stat-label">Passed</div></div>
+      <div class="summary-stat"><div class="summary-stat-num" style="color:var(--red)">${failCount}</div><div class="summary-stat-label">Failed</div></div>
+      <div class="summary-stat"><div class="summary-stat-num" style="color:var(--amber)">${warnCount}</div><div class="summary-stat-label">Warnings</div></div>
+    </div>
+    <div class="bilingual-note" style="margin-bottom:14px;">
+      <span class="bilingual-icon">🇨🇦</span>
+      <span><strong>Bilingual Audit:</strong> ${r.bilingualStatus}</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,0.02);border-radius:6px;border-left:2px solid var(--gold-dim);">${r.summary}</div>
+    <div class="check-list">${checksHTML}</div>`;
+
+  document.getElementById('lc-results-body').innerHTML = body;
+
+  labelResultsText = `NHP LABEL COMPLIANCE AUDIT REPORT\nNHP Comply™ — Victory Hour Multimedia\n${'='.repeat(50)}\n\nSCORE: ${r.score}/100\n\nSUMMARY:\n${r.summary}\n\nBILINGUAL STATUS:\n${r.bilingualStatus}\n\nRESULTS: ${passCount} Passed | ${failCount} Failed | ${warnCount} Warnings\n\n${'='.repeat(50)}\nCHECKS:\n\n${r.checks.map(c=>`[${c.status.toUpperCase()}] ${c.title}\n${c.description}\nRef: ${c.regulation}`).join('\n\n')}`;
+}
+
+function copyLabelResults(){
+  navigator.clipboard.writeText(labelResultsText).then(()=>{
+    const btns = document.querySelectorAll('.lc-copy-btn');
+    btns.forEach(b=>{b.textContent='Copied!';setTimeout(()=>b.textContent='Copy Report',2000);});
   });
 }
 </script>
