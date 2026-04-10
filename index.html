@@ -734,13 +734,19 @@ async function sendMsg(){
       body:JSON.stringify({system:SYSTEM,messages:history})
     });
     const data=await res.json();
-    const reply=data.content?.map(b=>b.text||'').join('')||'Unable to respond. Please try again.';
-    removeTyping();
-    addMsg('ai',reply);
-    history.push({role:'assistant',content:reply});
+    if(data.error){
+      removeTyping();
+      addMsg('ai',`API Error: ${JSON.stringify(data.error)} — Check your worker deployment.`);
+      history.pop();
+    } else {
+      const reply=data.content?.map(b=>b.text||'').join('')||'Unable to respond. Please try again.';
+      removeTyping();
+      addMsg('ai',reply);
+      history.push({role:'assistant',content:reply});
+    }
   }catch(e){
     removeTyping();
-    addMsg('ai','Connection error. Please check your network and try again.');
+    addMsg('ai',`Connection error: ${e.message} — Check your Cloudflare Worker is deployed.`);
     history.pop();
   }
   isLoading=false;
@@ -1025,12 +1031,16 @@ Return ONLY the JSON.`;
       })
     });
     const data = await res.json();
+    if(data.error){
+      document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>API Error: ${JSON.stringify(data.error)}</div></div>`;
+      btn.disabled=false; return;
+    }
     const raw = data.content?.map(b=>b.text||'').join('')||'';
     const clean = raw.replace(/```json|```/g,'').trim();
     const result = JSON.parse(clean);
     renderLabelResults(result);
   }catch(e){
-    document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>Analysis error. Check your worker connection and try again.<br><small style="color:var(--text3)">${e.message}</small></div></div>`;
+    document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>Error: ${e.message}<br><small style="color:var(--text3)">Check worker connection</small></div></div>`;
   }
   btn.disabled=false;
 }
