@@ -636,40 +636,12 @@ Distribué par: Victory Hour Wellness, Windsor, ON"></textarea>
 const WORKER_URL = 'https://nhp1-comply-proxy.victoryhourdream.workers.dev';
 
 async function callClaude(messages, system) {
-  // Try worker first, fall back to direct API
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages, system, max_tokens: 1500 })
-    });
-    const data = await res.json();
-    // If worker returns model error, it means old code — throw to trigger fallback
-    if (data.error && data.error.message && data.error.message.includes('model')) {
-      throw new Error('worker_model_error');
-    }
-    return data;
-  } catch(e) {
-    // Direct fallback — replace YOUR_KEY_HERE with your actual key temporarily
-    const API_KEY = 'YOUR_ANTHROPIC_KEY_HERE';
-    const payload = {
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 1500,
-      messages: messages,
-    };
-    if (system) payload.system = system;
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify(payload)
-    });
-    return await res.json();
-  }
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, system, max_tokens: 1500 })
+  });
+  return await res.json();
 }
 
 const SYSTEM = `You are NHP Co-Pilot™, an expert Canadian Natural Health Products (NHP) regulatory AI assistant built into the NHP Comply™ SaaS platform by Victory Hour Multimedia Inc. You have deep expertise in:
@@ -950,14 +922,12 @@ async function extractTextFromImage(base64, mediaType){
         {type:'text',text:`This is a Canadian NHP label image. Extract ALL text exactly as it appears. Separate English and French sections:\n\nENGLISH LABEL:\n[extracted english text]\n\nFRENCH LABEL:\n[extracted french text]`}
       ]
     }], null);
-    const text = data.content?.map(b=>b.text||'').join('')||'';    const data = await res.json();
     const text = data.content?.map(b=>b.text||'').join('')||'';
-    // Parse out EN and FR sections
     const enMatch = text.match(/ENGLISH LABEL:\s*([\s\S]*?)(?=FRENCH LABEL:|$)/i);
     const frMatch = text.match(/FRENCH LABEL:\s*([\s\S]*?)$/i);
     if(enMatch && enMatch[1].trim()) document.getElementById('label-en').value = enMatch[1].trim();
     if(frMatch && frMatch[1].trim()) document.getElementById('label-fr').value = frMatch[1].trim();
-    document.getElementById('lc-status').textContent='✓ Text extracted from image. Review and click Analyze Labels.';
+    document.getElementById('lc-status').textContent='✓ Text extracted. Review and click Analyze Labels.';
   }catch(e){
     document.getElementById('lc-status').textContent='Could not extract text. Please paste manually.';
   }
