@@ -635,11 +635,11 @@ Distribué par: Victory Hour Wellness, Windsor, ON"></textarea>
 // ============================================================
 const WORKER_URL = 'https://nhp1-comply-proxy.victoryhourdream.workers.dev';
 
-async function callClaude(messages, system) {
+async function callClaude(messages, system, maxTokens) {
   const res = await fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, system, max_tokens: 1500 })
+    body: JSON.stringify({ messages, system, max_tokens: maxTokens || 1500 })
   });
   return await res.json();
 }
@@ -1002,14 +1002,19 @@ Return ONLY the JSON.`;
   }
 
   try{
-    const data = await callClaude([{role:'user', content: messageContent}], null);
+    const data = await callClaude([{role:'user', content: messageContent}], null, 2000);
     if(data.error){
       document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>API Error: ${JSON.stringify(data.error)}</div></div>`;
       btn.disabled=false; return;
     }
     const raw = data.content?.map(b=>b.text||'').join('')||'';
-    const clean = raw.replace(/```json|```/g,'').trim();
-    const result = JSON.parse(clean);
+    // Bulletproof JSON extraction — find the JSON object anywhere in the response
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if(!jsonMatch){
+      document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>Could not parse audit results. Raw response:<br><small style="color:var(--text3);font-family:monospace">${raw.substring(0,300)}</small></div></div>`;
+      btn.disabled=false; return;
+    }
+    const result = JSON.parse(jsonMatch[0]);
     renderLabelResults(result);
   }catch(e){
     document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">⚠️</div><div>Error: ${e.message}<br><small style="color:var(--text3)">Check worker connection</small></div></div>`;
