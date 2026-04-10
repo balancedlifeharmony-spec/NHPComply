@@ -268,6 +268,17 @@ body{font-family:'Barlow Condensed',sans-serif;background:var(--navy);color:var(
 
 .lc-copy-btn{padding:6px 14px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:rgba(201,168,76,0.05);color:var(--gold);text-transform:uppercase;transition:all 0.15s;font-family:'Barlow Condensed',sans-serif;}
 .lc-copy-btn:hover{background:rgba(201,168,76,0.14);}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;background:rgba(201,168,76,0.03);}
+.upload-zone:hover{background:rgba(201,168,76,0.07);border-color:var(--gold);}
+.upload-zone.dragover{background:rgba(201,168,76,0.1);border-color:var(--gold);}
+.upload-icon{font-size:20px;flex-shrink:0;}
+.upload-text{font-size:12px;color:var(--text2);line-height:1.4;}
+.upload-text strong{color:var(--gold);}
+.upload-text small{display:block;color:var(--text3);font-size:10px;margin-top:2px;}
+.upload-file-input{display:none;}
+.uploaded-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(46,204,138,0.1);border:1px solid rgba(46,204,138,0.2);border-radius:12px;font-size:11px;color:var(--green);font-weight:600;}
+.upload-processing{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);}
+.upload-spinner{width:14px;height:14px;border:1.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
 
 .lc-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:14px;}
 .lc-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
@@ -514,6 +525,17 @@ Distribué par: Victory Hour Wellness, Windsor, ON"></textarea>
             <button class="btn-clear" onclick="loadSampleFR()">Load Sample FR</button>
           </div>
         </div>
+      </div>
+
+      <!-- FILE UPLOAD ZONE -->
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('label-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">
+          <strong>Upload label image or PDF</strong> — Claude will read it automatically
+          <small>Supports: JPG, PNG, PDF · Max 5MB · Both EN and FR label images accepted</small>
+        </div>
+        <div id="upload-status" style="margin-left:auto;flex-shrink:0;"></div>
+        <input type="file" id="label-file-input" class="upload-file-input" accept="image/*,.pdf" onchange="handleFileUpload(event)">
       </div>
 
       <!-- RESULTS -->
@@ -814,6 +836,9 @@ function clearLabels(){
   document.getElementById('lc-results-body').innerHTML=`<div class="lc-placeholder"><div class="lc-placeholder-icon">🏷️</div><div>Paste your English and French label text above<br>then click <strong>Analyze Labels</strong> to run a full NHP compliance audit</div></div>`;
   document.getElementById('lc-score-area').style.display='none';
   document.getElementById('lc-status').textContent='';
+  document.getElementById('upload-status').innerHTML='';
+  document.getElementById('label-file-input').value='';
+  uploadedImageData=null;uploadedMediaType=null;uploadedFileName='';
 }
 
 function loadSampleFR(){
@@ -832,11 +857,101 @@ Distribué par: Victory Hour Wellness, Windsor, ON Canada`;
 
 let labelResultsText = '';
 
+// ============================================================
+// FILE UPLOAD HANDLER
+// ============================================================
+let uploadedImageData = null;
+let uploadedMediaType = null;
+let uploadedFileName = '';
+
+function handleDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('dragover');}
+function handleDragLeave(e){document.getElementById('upload-zone').classList.remove('dragover');}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file) processUploadedFile(file);
+}
+function handleFileUpload(e){
+  const file = e.target.files[0];
+  if(file) processUploadedFile(file);
+}
+
+function processUploadedFile(file){
+  const status = document.getElementById('upload-status');
+  const maxSize = 5 * 1024 * 1024;
+  if(file.size > maxSize){
+    status.innerHTML=`<span style="color:var(--red);font-size:11px;">File too large (max 5MB)</span>`;
+    return;
+  }
+  const allowed = ['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+  if(!allowed.includes(file.type)){
+    status.innerHTML=`<span style="color:var(--red);font-size:11px;">Unsupported file type</span>`;
+    return;
+  }
+  status.innerHTML=`<div class="upload-processing"><div class="upload-spinner"></div>Reading file...</div>`;
+  uploadedFileName = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const base64 = e.target.result.split(',')[1];
+    uploadedImageData = base64;
+    uploadedMediaType = file.type;
+    status.innerHTML=`<span class="uploaded-badge">✓ ${file.name}</span>`;
+    // If it's an image, also extract text via Claude and populate the textarea
+    if(file.type !== 'application/pdf'){
+      extractTextFromImage(base64, file.type);
+    } else {
+      document.getElementById('lc-status').textContent='PDF loaded — click Analyze Labels to audit.';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function extractTextFromImage(base64, mediaType){
+  document.getElementById('lc-status').textContent='Extracting label text from image...';
+  try{
+    const res = await fetch(WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        max_tokens:1500,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+            {type:'text',text:`This is a Canadian NHP (Natural Health Product) label image. 
+Please extract ALL text you can see on the label exactly as it appears, preserving the structure.
+Separate English and French sections clearly if both are present.
+Label them:
+ENGLISH LABEL:
+[extracted english text]
+
+FRENCH LABEL:
+[extracted french text]
+
+If only one language is visible, just extract what you see.`}
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(b=>b.text||'').join('')||'';
+    // Parse out EN and FR sections
+    const enMatch = text.match(/ENGLISH LABEL:\s*([\s\S]*?)(?=FRENCH LABEL:|$)/i);
+    const frMatch = text.match(/FRENCH LABEL:\s*([\s\S]*?)$/i);
+    if(enMatch && enMatch[1].trim()) document.getElementById('label-en').value = enMatch[1].trim();
+    if(frMatch && frMatch[1].trim()) document.getElementById('label-fr').value = frMatch[1].trim();
+    document.getElementById('lc-status').textContent='✓ Text extracted from image. Review and click Analyze Labels.';
+  }catch(e){
+    document.getElementById('lc-status').textContent='Could not extract text. Please paste manually.';
+  }
+}
+
 async function runLabelCheck(){
   const en = document.getElementById('label-en').value.trim();
   const fr = document.getElementById('label-fr').value.trim();
-  if(!en && !fr){
-    document.getElementById('lc-status').textContent='Please enter at least one label.';
+  if(!en && !fr && !uploadedImageData){
+    document.getElementById('lc-status').textContent='Please enter label text or upload a label file.';
     return;
   }
   const btn = document.getElementById('analyze-btn');
@@ -845,57 +960,69 @@ async function runLabelCheck(){
   document.getElementById('lc-score-area').style.display='none';
   document.getElementById('lc-results-body').innerHTML=`<div class="lc-loading"><div class="lc-spinner"></div><div class="lc-loading-text">Claude is auditing your label against SOR/2003-196...</div></div>`;
 
-  const prompt = `You are an expert Canadian NHP label compliance auditor under the Natural Health Products Regulations (SOR/2003-196).
+  const auditInstruction = `You are an expert Canadian NHP label compliance auditor under the Natural Health Products Regulations (SOR/2003-196).
 
 Audit the following NHP label(s) and return a JSON object ONLY — no preamble, no markdown, no explanation outside the JSON.
 
-ENGLISH LABEL:
-${en || '(not provided)'}
-
-FRENCH LABEL:
-${fr || '(not provided)'}
+${en ? 'ENGLISH LABEL:\n'+en : ''}
+${fr ? '\nFRENCH LABEL:\n'+fr : ''}
+${(!en && !fr) ? 'The label is provided as an image above. Extract and audit all visible text.' : ''}
 
 Return this exact JSON structure:
 {
   "score": <number 0-100>,
   "scoreColor": <"green" if 80+, "amber" if 50-79, "red" if below 50>,
   "summary": "<2 sentence overall assessment>",
-  "bilingualStatus": "<assessment of bilingual compliance — are both languages present, equivalent, and complete?>",
+  "bilingualStatus": "<assessment of bilingual compliance>",
   "checks": [
     {
       "status": "<pass|fail|warn>",
-      "title": "<short title of the check>",
+      "title": "<short title>",
       "description": "<what was found or missing>",
       "regulation": "<e.g. SOR/2003-196 Section 6(1)(a)>"
     }
   ]
 }
 
-Check ALL of the following requirements from SOR/2003-196:
+Check ALL of the following (SOR/2003-196):
 1. Product proper name present (EN + FR) — Section 6(1)(a)
-2. NPN or DIN-HM number present — Section 6(1)(b)
+2. NPN or DIN-HM number — Section 6(1)(b)
 3. Net quantity stated — Section 6(1)(c)
-4. Name and address of product licence holder — Section 6(1)(d)
-5. Lot number present — Section 6(1)(e)
-6. Expiry date present — Section 6(1)(f)
-7. Recommended use/purpose stated — Section 6(2)(a)
-8. Medicinal ingredients listed with quantity/potency — Section 6(2)(b)
+4. Name and address of licence holder — Section 6(1)(d)
+5. Lot number — Section 6(1)(e)
+6. Expiry date — Section 6(1)(f)
+7. Recommended use/purpose — Section 6(2)(a)
+8. Medicinal ingredients with quantity/potency — Section 6(2)(b)
 9. Non-medicinal ingredients listed — Section 6(2)(c)
-10. Directions for use present — Section 6(2)(d)
-11. Risk information / cautions / contraindications — Section 6(2)(e)
-12. Storage conditions stated — Section 6(2)(f)
-13. Both official languages used (English AND French) — Section 10
-14. French label equivalent to English (same information, no omissions) — Section 10
-15. No disease treatment claims beyond Schedule A scope — Section 9
-16. Recommended dose is specific with units — HC guidance
+10. Directions for use — Section 6(2)(d)
+11. Risk info / cautions / contraindications — Section 6(2)(e)
+12. Storage conditions — Section 6(2)(f)
+13. Both official languages (EN and FR) — Section 10
+14. French equivalent to English — Section 10
+15. No prohibited disease claims — Section 9
+16. Dose is specific with units — HC guidance
 
-Return ONLY the JSON. No other text.`;
+Return ONLY the JSON.`;
+
+  // Build message content — include image if uploaded
+  let messageContent;
+  if(uploadedImageData && !en && !fr){
+    messageContent = [
+      {type:'image', source:{type:'base64', media_type:uploadedMediaType, data:uploadedImageData}},
+      {type:'text', text: auditInstruction}
+    ];
+  } else {
+    messageContent = auditInstruction;
+  }
 
   try{
     const res = await fetch(WORKER_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({
+        max_tokens:1500,
+        messages:[{role:'user', content: messageContent}]
+      })
     });
     const data = await res.json();
     const raw = data.content?.map(b=>b.text||'').join('')||'';
