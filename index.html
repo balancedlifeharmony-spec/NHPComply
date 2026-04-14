@@ -908,7 +908,6 @@ function processUploadedFile(file){
     } else {
       document.getElementById('lc-status').textContent='PDF loaded ✓ — click Analyze Labels to audit directly.';
     }
-    }
   };
   reader.readAsDataURL(file);
 }
@@ -991,9 +990,13 @@ Check ALL of the following (SOR/2003-196):
 
 Return ONLY the JSON.`;
 
-  // Build message content — handle image vs PDF vs text
+  // Build message content — text takes priority over uploaded file
   let messageContent;
-  if(uploadedImageData && !en && !fr){
+  if(en || fr){
+    // Text is available — use it, ignore uploaded file
+    messageContent = auditInstruction;
+  } else if(uploadedImageData){
+    // No text — use uploaded file
     if(uploadedMediaType === 'application/pdf'){
       messageContent = [
         {type:'document', source:{type:'base64', media_type:'application/pdf', data:uploadedImageData}},
